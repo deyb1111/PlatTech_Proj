@@ -166,7 +166,7 @@ Partial Class Form1
         Me.grpPredict.Text = "Predict Workload"
         Me.grpPredict.Font = New Font("Segoe UI", 11, FontStyle.Bold)
         Me.grpPredict.Location = New Point(20, 570)
-        Me.grpPredict.Size = New Size(460, 220)
+        Me.grpPredict.Size = New Size(460, 230)
 
         Me.Label6.Text = "Sleep Hours:"
         Me.Label6.Location = New Point(10, 40)
@@ -188,10 +188,13 @@ Partial Class Form1
         Me.btnPredict.Location = New Point(300, 90)
         Me.btnPredict.Size = New Size(130, 35)
 
+        ' Prediction label – full-width line under inputs
         Me.lblPredictionResult.Text = "Prediction: "
-        Me.lblPredictionResult.Font = New Font("Segoe UI", 12, FontStyle.Bold)
-        Me.lblPredictionResult.Location = New Point(300, 140)
-        Me.lblPredictionResult.AutoSize = True
+        Me.lblPredictionResult.Font = New Font("Segoe UI", 11, FontStyle.Bold)
+        Me.lblPredictionResult.Location = New Point(10, 200)
+        Me.lblPredictionResult.Size = New Size(430, 25)
+        Me.lblPredictionResult.AutoSize = False
+        Me.lblPredictionResult.TextAlign = ContentAlignment.MiddleLeft
 
         Me.grpPredict.Controls.AddRange(
             {
@@ -250,7 +253,7 @@ Partial Class Form1
 
         ' FORM SETTINGS
         Me.Text = "Machine Learning Analytics System"
-        Me.ClientSize = New Size(1185, 820)
+        Me.ClientSize = New Size(1185, 830)
         Me.BackColor = ColorTranslator.FromHtml("#EFECE3")
 
         Me.ResumeLayout(False)

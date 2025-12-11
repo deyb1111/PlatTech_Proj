@@ -2,10 +2,6 @@
 Imports System.IO
 
 Public Class Form1
-
-    ' ---------------------------
-    ' Run Python Helper Function
-    ' ---------------------------
     Private Function RunPython(scriptName As String, Optional args As String = "") As String
         Try
             Dim scriptPath As String = Path.Combine(Application.StartupPath, scriptName)
@@ -25,28 +21,29 @@ Public Class Form1
             Dim err As String = p.StandardError.ReadToEnd()
             p.WaitForExit()
 
-            If err.Trim() <> "" Then
-                Return "ERROR: " & err
+            Dim stdoutTrim As String = output.Trim()
+            Dim stderrTrim As String = err.Trim()
+
+            If p.ExitCode <> 0 Then
+                If stderrTrim <> "" Then
+                    Return "ERROR: " & stderrTrim
+                Else
+                    Return "ERROR: Python exited with code " & p.ExitCode.ToString()
+                End If
             End If
 
-            Return output
+            Return stdoutTrim
 
         Catch ex As Exception
             Return "EXCEPTION: " & ex.Message
         End Try
     End Function
-
-    ' ---------------------------
-    ' Load image into PictureBox without locking the file
-    ' ---------------------------
     Private Sub LoadImageNoLock(pb As PictureBox, path As String)
-        ' Dispose old image if present
         If pb.Image IsNot Nothing Then
             pb.Image.Dispose()
             pb.Image = Nothing
         End If
 
-        ' Load from stream so the file can be overwritten later
         Using fs As New FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
             Using imgTemp As Image = Image.FromStream(fs)
                 pb.Image = New Bitmap(imgTemp)
@@ -54,9 +51,6 @@ Public Class Form1
         End Using
     End Sub
 
-    ' ---------------------------
-    ' Form Load = Apply styling
-    ' ---------------------------
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
         Dim cream As Color = ColorTranslator.FromHtml("#EFECE3")
@@ -65,7 +59,6 @@ Public Class Form1
 
         Me.BackColor = cream
 
-        ' Style buttons
         For Each ctrl As Control In Me.Controls
             If TypeOf ctrl Is Button Then
                 Dim b As Button = CType(ctrl, Button)
@@ -77,7 +70,6 @@ Public Class Form1
             End If
         Next
 
-        ' Style groups
         For Each grp As GroupBox In Me.Controls.OfType(Of GroupBox)()
             grp.BackColor = cream
             grp.ForeColor = navy
@@ -86,9 +78,6 @@ Public Class Form1
         txtSummary.Font = New Font("Consolas", 10)
     End Sub
 
-    ' ---------------------------
-    ' Load Summary Button
-    ' ---------------------------
     Private Sub btnLoadSummary_Click(sender As Object, e As EventArgs) Handles btnLoadSummary.Click
 
         RunPython("data_analytics.py")
@@ -101,10 +90,6 @@ Public Class Form1
             txtSummary.Text = "Summary file not found."
         End If
     End Sub
-
-    ' ---------------------------
-    ' Show Charts Button
-    ' ---------------------------
     Private Sub btnShowCharts_Click(sender As Object, e As EventArgs) Handles btnShowCharts.Click
 
         RunPython("data_visualization.py")
@@ -128,10 +113,6 @@ Public Class Form1
         End If
 
     End Sub
-
-    ' ---------------------------
-    ' Train Model Button
-    ' ---------------------------
     Private Sub btnTrainModel_Click(sender As Object, e As EventArgs) Handles btnTrainModel.Click
 
         Dim msg As String = RunPython("classification_project.py")
@@ -142,11 +123,7 @@ Public Class Form1
         MsgBox(msg, MsgBoxStyle.Information, "Training Complete")
     End Sub
 
-    ' ---------------------------
-    ' Predict Button
-    ' ---------------------------
     Private Sub btnPredict_Click(sender As Object, e As EventArgs) Handles btnPredict.Click
-
         Dim sleep As String = nudSleep.Value.ToString()
         Dim study As String = nudStudy.Value.ToString()
         Dim subjects As String = nudSubjects.Value.ToString()
@@ -154,9 +131,15 @@ Public Class Form1
 
         Dim args As String = sleep & " " & study & " " & subjects & " " & stress
 
-        Dim result As String = RunPython("predict.py", args)
+        Dim result As String = RunPython("predict.py", args).Trim()
 
-        lblPredictionResult.Text = "Prediction: " & result
+        If result.StartsWith("ERROR:") OrElse result.StartsWith("EXCEPTION:") Then
+            MessageBox.Show(result, "Prediction Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            lblPredictionResult.Text = "Prediction: (error)"
+        ElseIf result = "" Then
+            lblPredictionResult.Text = "Prediction: (no output)"
+        Else
+            lblPredictionResult.Text = "Prediction: " & result
+        End If
     End Sub
-
 End Class
